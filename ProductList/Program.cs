@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +10,7 @@ builder.Services.AddCors(o =>
 {
     o.AddPolicy("AllowAll", a => a.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 });
+builder.Services.AddDbContext<ProdDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("Dbcon")));
 
 var app = builder.Build();
 
