@@ -29,7 +29,7 @@ public class ProdDbContext:DbContext
             },
             new Product
             {
-                ProductId = 2,
+                ProductId = 3,
                 Name = "Shoes",
                 Description = "part of the back to school package"
                 

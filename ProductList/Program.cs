@@ -43,6 +43,10 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapGet("/Product", async (ProdDbContext db) =>
+    await db.Products.ToListAsync()
+);
+
 app.Run();
 
 internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
