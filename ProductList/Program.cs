@@ -24,32 +24,42 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
 app.MapGet("/Product", async (ProdDbContext db) =>
     await db.Products.ToListAsync()
 );
 
-app.Run();
+app.MapGet("/Product/{ProductId}", async (int ProductId, ProdDbContext db) =>
+    await db.Products.FirstOrDefaultAsync(q=>q.ProductId==ProductId)
+    is Product product
+    ? Results.Ok(product)
+    : Results.NotFound()
+);
 
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+app.MapPut("/Product/{ProductId}", async (int ProductId, Product product ,ProdDbContext db)=>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var rec = await db.Products.FirstOrDefaultAsync(u => u.ProductId == ProductId);
+    if (rec is null) return Results.NotFound();
+    rec.Name = product.Name;
+    rec.Description = product.Description;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapPost("/Product", async (Product product, ProdDbContext db) =>
+{
+    db.Add(product);
+    await db.SaveChangesAsync();
+    return Results.Created($"/Product/{product.ProductId}", product);
+});
+
+app.MapDelete("/Product/{ProductId}", async (int ProductId, ProdDbContext db) =>
+{
+    var rec = await db.Products.FirstOrDefaultAsync(x => x.ProductId == ProductId);
+    if (rec is null) return Results.NotFound();
+    db.Remove(rec);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.Run();
