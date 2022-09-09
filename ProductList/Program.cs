@@ -10,7 +10,7 @@ builder.Services.AddCors(o =>
 {
     o.AddPolicy("AllowAll", a => a.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 });
-builder.Services.AddDbContext<ProdDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("Dbcon")));
+builder.Services.AddDbContext<ProdDbContext>(x => x.UseNpgsql(builder.Configuration.GetConnectionString("Dbcon")));
 
 var app = builder.Build();
 
@@ -40,6 +40,7 @@ app.MapPut("/Product/{ProductId}", async (int ProductId, Product product ,ProdDb
 {
     var rec = await db.Products.FirstOrDefaultAsync(u => u.ProductId == ProductId);
     if (rec is null) return Results.NotFound();
+
     rec.Name = product.Name;
     rec.Description = product.Description;
     await db.SaveChangesAsync();
